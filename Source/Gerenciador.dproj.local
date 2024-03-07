@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2024/03/05 17:21:06.000.244,=E:\Projetos Delphi\Unit1.pas</Transaction>
+    <Transaction>2024/03/05 17:26:31.000.870,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\GerenciadorEmMassa.dfm=E:\Projetos Delphi\Unit1.dfm</Transaction>
+    <Transaction>2024/03/05 17:26:31.000.870,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\GerenciadorEmMassa.pas=E:\Projetos Delphi\Unit1.pas</Transaction>
+    <Transaction>2024/03/05 17:27:05.000.572,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Gerenciador.dproj=E:\Projetos Delphi\Project1.dproj</Transaction>
+    <Transaction>2024/03/05 18:01:38.000.640,=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/05 18:11:00.000.798,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Configuracao.pas=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/05 18:11:00.000.798,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Configuracao.dfm=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.dfm</Transaction>
+    <Transaction>2024/03/05 18:28:26.000.556,=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/05 18:36:25.000.500,=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/06 00:48:03.000.168,=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/06 00:53:12.000.863,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Unit1.pas=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/06 00:53:12.000.863,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Unit1.dfm=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.dfm</Transaction>
+    <Transaction>2024/03/06 00:53:19.000.095,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Unit1.pas=</Transaction>
+    <Transaction>2024/03/06 00:53:31.000.556,=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/06 00:54:03.000.534,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Informacoes.dfm=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.dfm</Transaction>
+    <Transaction>2024/03/06 00:54:03.000.534,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Informacoes.pas=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/06 13:25:37.000.599,=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas</Transaction>
+    <Transaction>2024/03/06 13:28:57.000.535,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.pas=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Solucoes.pas</Transaction>
+    <Transaction>2024/03/06 13:28:57.000.535,E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Unit1.dfm=E:\Projetos Delphi\GerenciadorProjetoComGit\Source\Forms\Solucoes.dfm</Transaction>
+  </Transactions>
+	<ProjectSortOrder AutoSort="0" SortType="0">
+    <File Path="Forms"/>
+    <File Path="Forms\Configuracao.pas"/>
+    <File Path="Forms\Configuracao.dfm"/>
+    <File Path="Forms\GerenciadorEmMassa.pas"/>
+    <File Path="Forms\GerenciadorEmMassa.dfm"/>
+    <File Path="Forms\Informacoes.pas"/>
+    <File Path="Forms\Informacoes.dfm"/>
+    <File Path="Forms\Solucoes.pas"/>
+    <File Path="Forms\Solucoes.dfm"/>
+  </ProjectSortOrder>
+</BorlandProject>

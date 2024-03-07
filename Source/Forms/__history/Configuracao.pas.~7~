@@ -1,0 +1,51 @@
+unit Configuracao;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TConfiguracoes = class(TForm)
+    BtPesquisa: TButton;
+    EditCaminhoGitBash: TEdit;
+    OpenDialog: TOpenDialog;
+    procedure BtPesquisaClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Configuracoes: TConfiguracoes;
+
+implementation
+
+{$R *.dfm}
+
+procedure TConfiguracoes.BtPesquisaClick(Sender: TObject);
+begin
+OpenDialog := TOpenDialog.Create(Self);
+  try
+    OpenDialog.Filter := 'Arquivos Executáveis (*.exe)|*.exe';
+    OpenDialog.Title := 'Selecione um Arquivo Executável';
+
+    if OpenDialog.Execute then
+    begin
+      // Verificar se o arquivo selecionado é um executável (.exe)
+      if SameText(ExtractFileExt(OpenDialog.FileName), '.exe') then
+      begin
+        EditCaminhoGitBash.Text := OpenDialog.FileName;
+      end
+      else
+      begin
+        ShowMessage('Por favor, selecione um arquivo executável (.exe).');
+      end;
+    end;
+  finally
+    OpenDialog.Free;
+  end;
+end;
+end.

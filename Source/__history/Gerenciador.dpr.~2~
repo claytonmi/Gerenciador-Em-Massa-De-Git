@@ -1,0 +1,14 @@
+program Gerenciador;
+
+uses
+  Vcl.Forms,
+  GerenciadorEmMassa in 'Forms\GerenciadorEmMassa.pas' {GerenciadorEmMassaaDeGit};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TGerenciadorEmMassaaDeGit, GerenciadorEmMassaaDeGit);
+  Application.Run;
+end.
