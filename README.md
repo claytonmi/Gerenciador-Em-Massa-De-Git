@@ -1,0 +1,1 @@
+# Gerenciador-Em-Massa-De-Git
