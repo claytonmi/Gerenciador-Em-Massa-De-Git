@@ -4,8 +4,8 @@ object Configuracoes: TConfiguracoes
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Configura'#231#227'o'
-  ClientHeight = 129
-  ClientWidth = 424
+  ClientHeight = 138
+  ClientWidth = 280
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2130,7 +2130,7 @@ object Configuracoes: TConfiguracoes
   Position = poScreenCenter
   TextHeight = 15
   object BtPesquisa: TButton
-    Left = 351
+    Left = 231
     Top = 24
     Width = 33
     Height = 25
@@ -2139,26 +2139,49 @@ object Configuracoes: TConfiguracoes
     OnClick = BtPesquisaClick
   end
   object EditCaminhoGitBash: TEdit
-    Left = 40
+    Left = 8
     Top = 25
-    Width = 305
+    Width = 217
     Height = 23
     TabOrder = 1
     TextHint = 'Caminho do sh.exe'
   end
-  object BitBtn1: TBitBtn
-    Left = 155
-    Top = 68
+  object BtSalvar: TBitBtn
+    Left = 99
+    Top = 108
     Width = 75
     Height = 25
     Caption = 'Salvar'
     TabOrder = 2
-    OnClick = BitBtn1Click
+    OnClick = BtSalvarClick
+  end
+  object BtCaminhoPastaCheckou: TBitBtn
+    Left = 231
+    Top = 64
+    Width = 33
+    Height = 25
+    Caption = '...'
+    TabOrder = 3
+    OnClick = BtCaminhoPastaCheckouClick
+  end
+  object EdCheckout: TEdit
+    Left = 8
+    Top = 65
+    Width = 217
+    Height = 23
+    TabOrder = 4
+    TextHint = 'Pastas para realizar checkout'
   end
   object OpenDialog: TOpenDialog
     Filter = #39'Folders|*.none'#39
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
-    Left = 280
-    Top = 56
+    Left = 128
+  end
+  object FileOpenDialog: TFileOpenDialog
+    FavoriteLinks = <>
+    FileTypes = <>
+    Options = [fdoPickFolders, fdoAllowMultiSelect]
+    Left = 128
+    Top = 48
   end
 end

@@ -4,8 +4,8 @@ object Info: TInfo
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Informa'#231#245'es'
-  ClientHeight = 133
-  ClientWidth = 408
+  ClientHeight = 356
+  ClientWidth = 392
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2130,24 +2130,9 @@ object Info: TInfo
   Position = poScreenCenter
   OnShow = FormShow
   TextHeight = 15
-  object NomeProduto: TLabel
-    Left = 24
-    Top = 8
-    Width = 115
-    Height = 17
-    Caption = 'Nome do Produto:'
-    Color = clBackground
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clNone
-    Font.Height = -13
-    Font.Name = 'Segoe UI'
-    Font.Style = [fsBold]
-    ParentColor = False
-    ParentFont = False
-  end
   object VersaoProduto: TLabel
-    Left = 24
-    Top = 29
+    Left = 117
+    Top = 258
     Width = 119
     Height = 17
     Caption = 'Vers'#227'o do Produto:'
@@ -2161,31 +2146,38 @@ object Info: TInfo
     ParentFont = False
   end
   object LbNomeProduto: TLabel
-    Left = 145
+    Left = 117
     Top = 8
-    Width = 33
-    Height = 15
+    Width = 12
+    Height = 17
     Caption = '...'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Segoe UI'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object LBVersaoProduto: TLabel
-    Left = 149
-    Top = 29
-    Width = 41
+    Left = 242
+    Top = 258
+    Width = 9
     Height = 15
     Caption = '...'
   end
   object LBDescProduto: TLabel
-    Left = 24
-    Top = 86
+    Left = 8
+    Top = 311
     Width = 376
     Height = 39
     Alignment = taCenter
     AutoSize = False
+    Enabled = False
   end
   object Label1: TLabel
-    Left = 24
-    Top = 52
-    Width = 50
+    Left = 130
+    Top = 281
+    Width = 51
     Height = 17
     Caption = 'Criador:'
     Color = clBackground
@@ -2198,10 +2190,36 @@ object Info: TInfo
     ParentFont = False
   end
   object Label2: TLabel
-    Left = 80
-    Top = 52
-    Width = 58
+    Left = 186
+    Top = 283
+    Width = 59
     Height = 15
     Caption = 'Clayton M.'
+  end
+  object Memo1: TMemo
+    Left = 8
+    Top = 33
+    Width = 376
+    Height = 217
+    Alignment = taCenter
+    BorderStyle = bsNone
+    Enabled = False
+    Lines.Strings = (
+      'O Gerenciador Em Massa oferece dois modos de utiliza'#231#227'o:'
+      ''
+      'Modo Padr'#227'o:'
+      
+        'Utilize o programa na pasta que cont'#233'm os projetos do GitHub. Se' +
+        ' as '
+      'pastas n'#227'o forem configuradas no menu de configura'#231#227'o, o '
+      'programa passar'#225' por todos os projetos conectados ao GitHub, '
+      'aplicando a mudan'#231'a para a branch espec'#237'fica.'
+      ''
+      'Modo Personalizado:'
+      'Configure as pastas desejadas no menu de configura'#231#227'o para '
+      'selecionar quais branches deseja aplicar. Este modo permite uma '
+      'personaliza'#231#227'o mais detalhada, permitindo que voc'#234' defina as '
+      'mudan'#231'as de branches espec'#237'ficas para pastas espec'#237'ficas.')
+    TabOrder = 0
   end
 end

@@ -8,13 +8,13 @@ uses
 
 type
   TInfo = class(TForm)
-    NomeProduto: TLabel;
     VersaoProduto: TLabel;
     LbNomeProduto: TLabel;
     LBVersaoProduto: TLabel;
     LBDescProduto: TLabel;
     Label1: TLabel;
     Label2: TLabel;
+    Memo1: TMemo;
     procedure FormShow(Sender: TObject);
   private
     { Private declarations }

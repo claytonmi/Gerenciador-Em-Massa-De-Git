@@ -1,0 +1,159 @@
+unit Configuracao;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons,
+  System.IOUtils, Winapi.ShlObj, Winapi.ShellAPI;
+
+type
+  TConfiguracoes = class(TForm)
+    BtPesquisa: TButton;
+    EditCaminhoGitBash: TEdit;
+    OpenDialog: TOpenDialog;
+    BtSalvar: TBitBtn;
+    BtCaminhoPastaCheckou: TBitBtn;
+    EdCheckout: TEdit;
+    FileOpenDialog: TFileOpenDialog;
+    procedure BtPesquisaClick(Sender: TObject);
+    procedure BtSalvarClick(Sender: TObject);
+    procedure BtCaminhoPastaCheckouClick(Sender: TObject);
+  private
+    { Private declarations }
+    Config: string;
+    ListaDePastas: TStringList;
+  public
+    { Public declarations }
+  end;
+
+var
+  Configuracoes: TConfiguracoes;
+
+implementation
+
+{$R *.dfm}
+
+procedure TConfiguracoes.BtSalvarClick(Sender: TObject);
+var
+  StreamWriter: TStreamWriter;
+  Caminho: string;
+  ArquivoTXT: TextFile;
+  CaminhoConfig: string;
+begin
+  Config := TPath.Combine(TPath.GetDocumentsPath, 'Config.txt');
+
+  // Verifica se o campo EditCaminhoGitBash está vazio
+  if EditCaminhoGitBash.Text = '' then
+  begin
+    ShowMessage('O campo Caminho Git Bash não pode estar vazio.');
+    Exit; // Não permite continuar se o campo estiver vazio
+  end;
+
+  try
+    // Cria um StreamWriter para escrever no arquivo
+    StreamWriter := TStreamWriter.Create(Config);
+
+    // Escreve o conteúdo do EditCaminhoGitBash no arquivo
+    StreamWriter.Write(EditCaminhoGitBash.Text);
+    ShowMessage('Configurações salvas com sucesso!');
+  finally
+    // Libera o StreamWriter
+    StreamWriter.Free;
+    Configuracoes.Close;
+  end;
+
+  // Agora, cria e preenche o arquivo ConfigCaminho.txt
+  ListaDePastas := TStringList.Create;
+  try
+    ListaDePastas.Text := StringReplace(EdCheckout.Text, ';', sLineBreak, [rfReplaceAll]);
+    CaminhoConfig := TPath.Combine(TPath.GetDocumentsPath, 'ConfigCaminho.txt');
+
+    AssignFile(ArquivoTXT, CaminhoConfig);
+    try
+      Rewrite(ArquivoTXT);
+
+      // Escreva os caminhos das pastas no arquivo ConfigCaminho.txt
+      for Caminho in ListaDePastas do
+      begin
+        Write(ArquivoTXT, Trim(Caminho));
+
+        // Adicione ponto e vírgula ao final de cada caminho, exceto para o último
+        if Caminho <> ListaDePastas.Last then
+          Write(ArquivoTXT, ';');
+
+        WriteLn(ArquivoTXT);
+      end;
+
+      ShowMessage('Caminhos salvos com sucesso em ' + CaminhoConfig);
+    finally
+      // Feche o arquivo
+      CloseFile(ArquivoTXT);
+    end;
+  finally
+    // Libere a memória da lista
+    ListaDePastas.Free;
+  end;
+end;
+
+procedure TConfiguracoes.BtCaminhoPastaCheckouClick(Sender: TObject);
+var
+  Dialog: TFileOpenDialog;
+  Caminho: string;
+begin
+  // Crie o diálogo de seleção de pastas
+  Dialog := TFileOpenDialog.Create(nil);
+  ListaDePastas := TStringList.Create; // Inicializa a lista de pastas
+  try
+    // Configure o diálogo para permitir a seleção de pastas e múltipla seleção
+    Dialog.Options := [fdoPickFolders, fdoAllowMultiSelect];
+    Dialog.Title := 'Selecione as pastas desejadas';
+
+    // Se o usuário clicar em OK, adicione as pastas selecionadas à lista
+    if Dialog.Execute then
+    begin
+      ListaDePastas.Assign(Dialog.Files);
+
+      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
+      EdCheckout.Text := '';
+
+      // Adicione os caminhos ao EdCheckout, separando por ponto e vírgula
+      for Caminho in ListaDePastas do
+        EdCheckout.Text := EdCheckout.Text + Caminho + ';';
+    end
+    else
+    begin
+      // O usuário cancelou a seleção
+      Exit;
+    end;
+  finally
+    // Libere o componente TFileOpenDialog
+    Dialog.Free;
+  end;
+end;
+
+procedure TConfiguracoes.BtPesquisaClick(Sender: TObject);
+begin
+  OpenDialog := TOpenDialog.Create(Self);
+  try
+    OpenDialog.Filter := 'Arquivos Executáveis (*.exe)|*.exe';
+    OpenDialog.Title := 'Selecione um Arquivo Executável';
+
+    if OpenDialog.Execute then
+    begin
+      // Verificar se o arquivo selecionado é um executável (.exe)
+      if SameText(ExtractFileExt(OpenDialog.FileName), '.exe') then
+      begin
+        EditCaminhoGitBash.Text := OpenDialog.FileName;
+      end
+      else
+      begin
+        ShowMessage('Por favor, selecione um arquivo executável (.exe).');
+      end;
+    end;
+  finally
+    OpenDialog.Free;
+  end;
+end;
+
+end.

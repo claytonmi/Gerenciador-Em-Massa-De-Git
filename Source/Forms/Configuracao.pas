@@ -3,20 +3,26 @@ unit Configuracao;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons,System.IOUtils;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons,
+  System.IOUtils, Winapi.ShlObj, Winapi.ShellAPI;
 
 type
   TConfiguracoes = class(TForm)
     BtPesquisa: TButton;
     EditCaminhoGitBash: TEdit;
     OpenDialog: TOpenDialog;
-    BitBtn1: TBitBtn;
+    BtSalvar: TBitBtn;
+    BtCaminhoPastaCheckou: TBitBtn;
+    EdCheckout: TEdit;
+    FileOpenDialog: TFileOpenDialog;
     procedure BtPesquisaClick(Sender: TObject);
-    procedure BitBtn1Click(Sender: TObject);
+    procedure BtSalvarClick(Sender: TObject);
+    procedure BtCaminhoPastaCheckouClick(Sender: TObject);
   private
     { Private declarations }
     Config: string;
+    ListaDePastas: TStringList;
   public
     { Public declarations }
   end;
@@ -28,9 +34,12 @@ implementation
 
 {$R *.dfm}
 
-procedure TConfiguracoes.BitBtn1Click(Sender: TObject);
+procedure TConfiguracoes.BtSalvarClick(Sender: TObject);
 var
   StreamWriter: TStreamWriter;
+  Caminho: string;
+  ArquivoTXT: TextFile;
+  CaminhoConfig: string;
 begin
   Config := TPath.Combine(TPath.GetDocumentsPath, 'Config.txt');
 
@@ -53,11 +62,77 @@ begin
     StreamWriter.Free;
     Configuracoes.Close;
   end;
+
+  // Agora, verifica se o arquivo ConfigCaminho.txt já existe nos Meus Documentos
+  CaminhoConfig := TPath.Combine(TPath.GetDocumentsPath, 'ConfigCaminho.txt');
+  if not FileExists(CaminhoConfig) and (EdCheckout.Text <> '') then
+  begin
+    // Se não existir e EdCheckout.Text estiver preenchido, cria e preenche o arquivo
+    ListaDePastas := TStringList.Create;
+    try
+      // Adiciona os caminhos da string ao objeto TStringList
+      ListaDePastas.Delimiter := ';';
+      ListaDePastas.DelimitedText := EdCheckout.Text;
+
+      AssignFile(ArquivoTXT, CaminhoConfig);
+      try
+        Rewrite(ArquivoTXT);
+
+        // Escreva os caminhos das pastas no arquivo ConfigCaminho.txt
+          WriteLn(ArquivoTXT, Trim(EdCheckout.Text));
+      finally
+        // Feche o arquivo
+        CloseFile(ArquivoTXT);
+      end;
+    finally
+      // Libere a memória da lista
+      ListaDePastas.Free;
+    end;
+  end;
+end;
+
+procedure TConfiguracoes.BtCaminhoPastaCheckouClick(Sender: TObject);
+var
+  Dialog: TFileOpenDialog;
+  Caminho: string;
+begin
+  // Crie o diálogo de seleção de pastas
+  Dialog := TFileOpenDialog.Create(nil);
+  ListaDePastas := TStringList.Create; // Inicializa a lista de pastas
+  try
+    // Configure o diálogo para permitir a seleção de pastas e múltipla seleção
+    Dialog.Options := [fdoPickFolders, fdoAllowMultiSelect];
+    Dialog.Title := 'Selecione as pastas desejadas';
+
+    // Se o usuário clicar em OK, adicione as pastas selecionadas à lista
+    if Dialog.Execute then
+    begin
+      ListaDePastas.Assign(Dialog.Files);
+
+      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
+      EdCheckout.Text := '';
+
+      // Adicione os caminhos ao EdCheckout, separando por ponto e vírgula
+      for Caminho in ListaDePastas do
+        EdCheckout.Text := EdCheckout.Text + Caminho + ';';
+
+      // Atualize a variável Caminho com as informações do EdCheckout.Text
+      Caminho := EdCheckout.Text;
+    end
+    else
+    begin
+      // O usuário cancelou a seleção
+      Exit;
+    end;
+  finally
+    // Libere o componente TFileOpenDialog
+    Dialog.Free;
+  end;
 end;
 
 procedure TConfiguracoes.BtPesquisaClick(Sender: TObject);
 begin
-OpenDialog := TOpenDialog.Create(Self);
+  OpenDialog := TOpenDialog.Create(Self);
   try
     OpenDialog.Filter := 'Arquivos Executáveis (*.exe)|*.exe';
     OpenDialog.Title := 'Selecione um Arquivo Executável';
@@ -78,4 +153,5 @@ OpenDialog := TOpenDialog.Create(Self);
     OpenDialog.Free;
   end;
 end;
+
 end.

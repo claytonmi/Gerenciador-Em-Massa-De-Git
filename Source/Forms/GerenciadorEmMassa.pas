@@ -3,9 +3,10 @@ unit GerenciadorEmMassa;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, ShellAPI,
-  Vcl.Menus,Configuracao,System.IOUtils, System.Types,Informacoes,Solucoes;
+  Vcl.Menus, Configuracao, System.IOUtils, System.Types, Informacoes, Solucoes;
 
 type
   TGerenciadorEmMassaaDeGit = class(TForm)
@@ -29,25 +30,26 @@ type
   private
     { Private declarations }
     function BuscarArquivoExe(const Diretorio, NomeArquivo: string): string;
+    procedure ExecutarGitCheckoutPull(const CaminhoArquivo: string);
   public
     { Public declarations }
     Config: string;
-    Comando,Comando2: string
-  end;
+    Comando, Comando2: string end;
 
-  function CriarArquivoBAT(const Caminho: string): Boolean;
-var
-  Branch: string;
-  GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit;
-  CaminhoCompleto: string;
-  CaminhoGitBash: string;
+    function CriarArquivoBAT(const Caminho: string): Boolean;
+
+  var
+    Branch: string;
+    GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit;
+    CaminhoCompleto: string;
+    CaminhoGitBash: string;
 
 implementation
 
 {$R *.dfm}
 
-procedure TGerenciadorEmMassaaDeGit.Soluesdepossiveiserros1Click(
-  Sender: TObject);
+procedure TGerenciadorEmMassaaDeGit.Soluesdepossiveiserros1Click
+  (Sender: TObject);
 begin
   Application.CreateForm(TSolucoesDeErro, SolucoesDeErro);
   SolucoesDeErro.showModal;
@@ -68,32 +70,169 @@ begin
   FreeAndNil(Info);
 end;
 
+procedure TGerenciadorEmMassaaDeGit.ExecutarGitCheckoutPull
+  (const CaminhoArquivo: string);
+var
+  ListaDePastas: TStringList;
+  Caminho: string;
+  GitCommand: string;
+  i: Integer;
+  Branch: string;
+  ScriptBAT: string;
+  BatFilePath: string;
+  StartupInfo: TStartupInfo;
+  ProcessInfo: TProcessInformation;
+  PastaAnterior: string;
+  ExitCode: DWORD;
+begin
+  // Crie uma lista de strings para armazenar os caminhos das pastas
+  ListaDePastas := TStringList.Create;
+  try
+    // Leia o arquivo ConfigCaminho.txt
+    ListaDePastas.Delimiter := ';';
+    ListaDePastas.StrictDelimiter := True;
+    ListaDePastas.DelimitedText := TFile.ReadAllText(CaminhoArquivo);
+
+    // Verifique se a lista está vazia
+    if ListaDePastas.Count = 0 then
+    begin
+      ShowMessage('A lista de pastas está vazia.');
+      Exit;
+    end;
+
+    // Verifique qual branch será usado com base no GrupoSelecao
+    case GrupoSelecao.ItemIndex of
+      0:
+        Branch := 'develop';
+      1:
+        Branch := 'release';
+      2:
+        Branch := 'main';
+      3:
+        Branch := EdBrachEspecifica.Text;
+    else
+      ShowMessage('Selecione um Grupo no raio de grupo.');
+      Exit;
+    end;
+
+    // Itere sobre os caminhos e execute os comandos Git
+   for i := 0 to ListaDePastas.Count - 1 do
+    begin
+      Caminho := Trim(ListaDePastas[i]);
+
+      if DirectoryExists(Caminho) then
+      begin
+        // Crie o ScriptBAT com os comandos Git
+        ScriptBAT := '@echo off' + sLineBreak +
+          Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
+          [CaminhoGitBash, Caminho, Branch]) + sLineBreak +
+          Format('"%s" --login -i -c "git -C ''%s'' pull"',
+          [CaminhoGitBash, Caminho]);
+
+        // Obtenha o caminho do diretório pai
+        PastaAnterior := TPath.GetDirectoryName(Caminho);
+        BatFilePath := TPath.Combine(PastaAnterior, 'Config.bat');
+
+        // Salve o ScriptBAT no arquivo .bat
+        TFile.WriteAllText(BatFilePath, ScriptBAT);
+
+        // Inicialize as estruturas StartupInfo e ProcessInfo
+        FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
+        FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
+
+        // Execute o arquivo .bat
+        if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil,
+          nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
+        begin
+          // Aguarde até que o processo seja concluído
+          WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+
+          // Obtenha o código de saída do processo
+          GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
+
+          // Libere os recursos do processo
+          CloseHandle(ProcessInfo.hProcess);
+          CloseHandle(ProcessInfo.hThread);
+
+          // Verifique se o processo foi encerrado com êxito
+          if ExitCode = 0 then
+          begin
+            // Remova o arquivo .bat somente após a conclusão bem-sucedida do processo
+            TFile.Delete(BatFilePath);
+          end
+          else
+            ShowMessage('Erro ao executar o processo. Código de saída: ' +
+              IntToStr(ExitCode));
+        end
+        else
+          ShowMessage('Erro ao criar o processo. Código de erro: ' +
+            IntToStr(GetLastError));
+      end
+      else
+    end;
+
+    // Exiba uma mensagem informando que os comandos foram executados com sucesso
+    ShowMessage
+      ('Comandos Git executados com sucesso para os caminhos especificados.');
+  finally
+    // Libere a memória da lista
+    ListaDePastas.Free;
+  end;
+end;
+
 procedure TGerenciadorEmMassaaDeGit.BtIniciarClick(Sender: TObject);
 const
   NomeArquivoBAT = 'Conf.bat';
+  NomeArquivoConfigCaminho = 'ConfigCaminho.txt';
+  PastaMeusDocumentos = 'Meus Documentos';
+var
+  CaminhoDocumentos: string;
 begin
+  // Verifique se algum item foi selecionado no GrupoSelecao
+  if GrupoSelecao.ItemIndex = -1 then
+  begin
+    ShowMessage('Escolha uma opção no grupo para continuar.');
+    Exit;
+  end;
+
   CaminhoCompleto := ExtractFilePath(ParamStr(0)) + NomeArquivoBAT;
-     if GrupoSelecao.ItemIndex = 3 then
-     begin
+
+  // Obtenha o caminho para a pasta "Meus Documentos"
+  CaminhoDocumentos := TPath.GetDocumentsPath;
+
+  // Verifique se o arquivo ConfigCaminho.txt existe na pasta "Meus Documentos"
+  if FileExists(TPath.Combine(CaminhoDocumentos, NomeArquivoConfigCaminho)) then
+  begin
+    // Se o arquivo existe, execute os comandos Git para cada pasta especificada
+    ExecutarGitCheckoutPull(TPath.Combine(CaminhoDocumentos,
+      NomeArquivoConfigCaminho));
+  end
+  else
+  begin
+    // Se o arquivo não existe, continue com o procedimento existente
+    if GrupoSelecao.ItemIndex = 3 then
+    begin
       if (EdBrachEspecifica.Text <> '') then
       begin
-        Branch:= EdBrachEspecifica.Text;
+        Branch := EdBrachEspecifica.Text;
       end
       else
       begin
-         ShowMessage('O Branch está vazio!');
-         Exit;
-       end;
-     end;
-     if CriarArquivoBAT(CaminhoCompleto) then
-     begin
-       // Execute o arquivo BAT
-        WinExec(PAnsiChar(AnsiString('cmd.exe /C "' + CaminhoCompleto + '"')), SW_SHOWNORMAL);
-     end
-     else
-      ShowMessage('Erro ao criar o arquivo BAT.');
-end;
+        ShowMessage('O campo "Nome da Branch" está vazio!');
+        Exit;
+      end;
+    end;
 
+    if CriarArquivoBAT(CaminhoCompleto) then
+    begin
+      // Execute o arquivo BAT
+      WinExec(PAnsiChar(AnsiString('cmd.exe /C "' + CaminhoCompleto + '"')),
+        SW_SHOWNORMAL);
+    end
+    else
+      ShowMessage('Erro ao criar o arquivo .BAT');
+  end;
+end;
 
 function CriarArquivoBAT(const Caminho: string): Boolean;
 var
@@ -106,31 +245,31 @@ begin
 
     if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 0 then
     begin
-      ScriptBAT :=
-        '@echo off' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout develop"' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
+      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout develop"'
+        + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
     end
     else if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 1 then
     begin
-      ScriptBAT :=
-        '@echo off' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout release"' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
+      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout release"'
+        + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
     end
     else if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 2 then
     begin
-      ScriptBAT :=
-        '@echo off' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout main"' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
+      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout main"'
+        + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
     end
     else if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 3 then
     begin
-      ScriptBAT :=
-        '@echo off' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout '+Branch+'"' + sLineBreak +
-        '"' + CaminhoGitBash + '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
+      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout '
+        + Branch + '"' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
     end;
 
     // Escreva o script no arquivo
@@ -162,7 +301,7 @@ end;
 procedure TGerenciadorEmMassaaDeGit.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-   CaminhoCompleto := ExtractFilePath(ParamStr(0)) + 'Conf.bat';
+  CaminhoCompleto := ExtractFilePath(ParamStr(0)) + 'Conf.bat';
 
   try
     // Verifique se o arquivo existe antes de tentar excluí-lo
@@ -176,13 +315,14 @@ begin
   end;
 end;
 
-
-function TGerenciadorEmMassaaDeGit.BuscarArquivoExe(const Diretorio, NomeArquivo: string): string;
+function TGerenciadorEmMassaaDeGit.BuscarArquivoExe(const Diretorio,
+  NomeArquivo: string): string;
 var
   Arquivos: TArray<string>;
 begin
   Result := '';
-  Arquivos := TDirectory.GetFiles(Diretorio, NomeArquivo, TSearchOption.soTopDirectoryOnly);
+  Arquivos := TDirectory.GetFiles(Diretorio, NomeArquivo,
+    TSearchOption.soTopDirectoryOnly);
 
   if Length(Arquivos) > 0 then
     Result := Arquivos[0];
@@ -235,7 +375,8 @@ begin
         finally
           StreamWriter.Free;
         end;
-        ShowMessage('Arquivo Config.txt foi criado com valor padrão do local do sh.exe, caso esteja instalado em outro local favor ir em configuração e alterar o caminho.');
+        ShowMessage
+          ('Arquivo Config.txt foi criado com valor padrão do local do sh.exe, caso esteja instalado em outro local favor ir em configuração e alterar o caminho.');
       end;
     end;
   except
@@ -248,10 +389,10 @@ procedure TGerenciadorEmMassaaDeGit.GrupoSelecaoClick(Sender: TObject);
 begin
   if GrupoSelecao.ItemIndex = 3 then
   begin
-      EdBrachEspecifica.Visible := true;
-  end else
-      EdBrachEspecifica.Visible := false;
-  end;
-
+    EdBrachEspecifica.Visible := True;
+  end
+  else
+    EdBrachEspecifica.Visible := False;
+end;
 
 end.
