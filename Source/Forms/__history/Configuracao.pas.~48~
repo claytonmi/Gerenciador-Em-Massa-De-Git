@@ -70,17 +70,16 @@ begin
     // Se não existir e EdCheckout.Text estiver preenchido, cria e preenche o arquivo
     ListaDePastas := TStringList.Create;
     try
-      ListaDePastas.Text := StringReplace(EdCheckout.Text, ';', sLineBreak, [rfReplaceAll]);
+      // Adiciona os caminhos da string ao objeto TStringList
+      ListaDePastas.Delimiter := ';';
+      ListaDePastas.DelimitedText := EdCheckout.Text;
 
       AssignFile(ArquivoTXT, CaminhoConfig);
       try
         Rewrite(ArquivoTXT);
 
         // Escreva os caminhos das pastas no arquivo ConfigCaminho.txt
-        for Caminho in ListaDePastas do
-          WriteLn(ArquivoTXT, Trim(Caminho));
-
-        ShowMessage('Caminhos salvos com sucesso em ' + CaminhoConfig);
+          WriteLn(ArquivoTXT, Trim(EdCheckout.Text));
       finally
         // Feche o arquivo
         CloseFile(ArquivoTXT);
@@ -110,12 +109,12 @@ begin
     begin
       ListaDePastas.Assign(Dialog.Files);
 
-      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
-      EdCheckout.Text := '';
-
       // Adicione os caminhos ao EdCheckout, separando por ponto e vírgula
       for Caminho in ListaDePastas do
         EdCheckout.Text := EdCheckout.Text + Caminho + ';';
+
+      // Atualize a variável Caminho com as informações do EdCheckout.Text
+      Caminho := EdCheckout.Text;
     end
     else
     begin

@@ -70,22 +70,22 @@ begin
   FreeAndNil(Info);
 end;
 
-procedure TGerenciadorEmMassaaDeGit.ExecutarGitCheckoutPull
-  (const CaminhoArquivo: string);
+procedure TGerenciadorEmMassaaDeGit.ExecutarGitCheckoutPull(const CaminhoArquivo: string);
 var
   ListaDePastas: TStringList;
   Caminho: string;
   GitCommand: string;
   i: Integer;
   Branch: string;
-  ScriptBAT: string;
-  BatFilePath: string;
   StartupInfo: TStartupInfo;
   ProcessInfo: TProcessInformation;
   ExitCode: DWORD;
+  ScriptBAT: TStringList;
 begin
   // Crie uma lista de strings para armazenar os caminhos das pastas
   ListaDePastas := TStringList.Create;
+  ScriptBAT := TStringList.Create;
+
   try
     // Leia o arquivo ConfigCaminho.txt
     ListaDePastas.Delimiter := ';';
@@ -114,73 +114,59 @@ begin
       Exit;
     end;
 
-    // Itere sobre os caminhos e execute os comandos Git
+    // Itere sobre os caminhos e crie os comandos Git no ScriptBAT
     for i := 0 to ListaDePastas.Count - 1 do
     begin
       Caminho := Trim(ListaDePastas[i]);
 
       if DirectoryExists(Caminho) then
       begin
-        // Obtenha o caminho do diretório pai
-        BatFilePath := TPath.Combine(Caminho, 'Config.bat');
+        ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
+          [CaminhoGitBash, Caminho, Branch]));
 
-        // Crie o ScriptBAT com os comandos Git
-        ScriptBAT := '@echo off' + sLineBreak +
-          Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
-          [CaminhoGitBash, Caminho, Branch]) + sLineBreak +
-          Format('"%s" --login -i -c "git -C ''%s'' pull"',
-          [CaminhoGitBash, Caminho]);
-
-        // Salve o ScriptBAT no arquivo .bat
-        TFile.WriteAllText(BatFilePath, ScriptBAT);
-
-        // Execute o arquivo .bat se ele existir
-        // Execute o arquivo .bat se ele existir
-        if FileExists(BatFilePath) then
-        begin
-          // Inicialize as estruturas StartupInfo e ProcessInfo
-          FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
-          FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
-
-          // Execute o arquivo .bat
-          if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil,
-            nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
-          begin
-            // Aguarde até que o processo seja concluído
-            WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
-
-            // Obtenha o código de saída do processo
-            GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
-
-            // Libere os recursos do processo
-            CloseHandle(ProcessInfo.hProcess);
-            CloseHandle(ProcessInfo.hThread);
-
-            // Verifique se o processo foi encerrado com êxito
-            if ExitCode = 0 then
-            begin
-              // Remova o arquivo .bat somente após a conclusão bem-sucedida do processo
-              TFile.Delete(BatFilePath);
-            end
-            else
-              ShowMessage('Erro ao executar o processo. Código de saída: ' +
-                IntToStr(ExitCode));
-          end
-          else
-            ShowMessage('Erro ao criar o processo. Código de erro: ' +
-              IntToStr(GetLastError));
-        end
-        else
-          ShowMessage('O arquivo .bat não foi encontrado: ' + BatFilePath);
+        ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' pull"',
+          [CaminhoGitBash, Caminho]));
       end;
     end;
 
-    // Exiba uma mensagem informando que os comandos foram executados com sucesso
-    ShowMessage
-      ('Comandos Git executados com sucesso para os caminhos especificados.');
+    // Inicialize as estruturas StartupInfo e ProcessInfo
+    FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
+    FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
+
+    // Adicione um comando para aguardar a tecla Enter no final do ScriptBAT
+    ScriptBAT.Add('pause');
+
+    try
+      // Execute o script diretamente sem criar arquivo .bat
+      if CreateProcess(nil, PChar('cmd.exe /C ' + ScriptBAT.Text), nil,
+        nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
+      begin
+        // Aguarde até que o processo seja concluído
+        WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+
+        // Obtenha o código de saída do processo
+        GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
+
+        // Libere os recursos do processo
+        CloseHandle(ProcessInfo.hProcess);
+        CloseHandle(ProcessInfo.hThread);
+
+        // Verifique se o processo foi encerrado com êxito
+        if ExitCode <> 0 then
+          ShowMessage('Erro ao executar o processo. Código de saída: ' +
+            IntToStr(ExitCode));
+      end
+      else
+        ShowMessage('Erro ao criar o processo. Código de erro: ' +
+          IntToStr(GetLastError));
+    finally
+      // Exiba uma mensagem informando que os comandos foram executados com sucesso
+      ShowMessage('Comandos Git executados com sucesso para os caminhos especificados.');
+    end;
   finally
-    // Libere a memória da lista
+    // Libere a memória das listas
     ListaDePastas.Free;
+    ScriptBAT.Free;
   end;
 end;
 

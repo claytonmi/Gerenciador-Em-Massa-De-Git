@@ -16,9 +16,11 @@ type
     BtCaminhoPastaCheckou: TBitBtn;
     EdCheckout: TEdit;
     FileOpenDialog: TFileOpenDialog;
+    BitBtn1: TBitBtn;
     procedure BtPesquisaClick(Sender: TObject);
     procedure BtSalvarClick(Sender: TObject);
     procedure BtCaminhoPastaCheckouClick(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
   private
     { Private declarations }
     Config: string;
@@ -91,6 +93,16 @@ begin
   end;
 end;
 
+procedure TConfiguracoes.BitBtn1Click(Sender: TObject);
+begin
+
+      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
+      EdCheckout.Text := '';
+
+      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
+      EditCaminhoGitBash.Text := '';
+end;
+
 procedure TConfiguracoes.BtCaminhoPastaCheckouClick(Sender: TObject);
 var
   Dialog: TFileOpenDialog;
@@ -108,9 +120,6 @@ begin
     if Dialog.Execute then
     begin
       ListaDePastas.Assign(Dialog.Files);
-
-      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
-      EdCheckout.Text := '';
 
       // Adicione os caminhos ao EdCheckout, separando por ponto e vírgula
       for Caminho in ListaDePastas do

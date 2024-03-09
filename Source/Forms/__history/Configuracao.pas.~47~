@@ -63,36 +63,31 @@ begin
     Configuracoes.Close;
   end;
 
-  // Agora, cria e preenche o arquivo ConfigCaminho.txt
-  ListaDePastas := TStringList.Create;
-  try
-    ListaDePastas.Text := StringReplace(EdCheckout.Text, ';', sLineBreak, [rfReplaceAll]);
-    CaminhoConfig := TPath.Combine(TPath.GetDocumentsPath, 'ConfigCaminho.txt');
-
-    AssignFile(ArquivoTXT, CaminhoConfig);
+  // Agora, verifica se o arquivo ConfigCaminho.txt já existe nos Meus Documentos
+  CaminhoConfig := TPath.Combine(TPath.GetDocumentsPath, 'ConfigCaminho.txt');
+  if not FileExists(CaminhoConfig) and (EdCheckout.Text <> '') then
+  begin
+    // Se não existir e EdCheckout.Text estiver preenchido, cria e preenche o arquivo
+    ListaDePastas := TStringList.Create;
     try
-      Rewrite(ArquivoTXT);
+      // Adiciona os caminhos da string ao objeto TStringList
+      ListaDePastas.Delimiter := ';';
+      ListaDePastas.DelimitedText := EdCheckout.Text;
 
-      // Escreva os caminhos das pastas no arquivo ConfigCaminho.txt
-      for Caminho in ListaDePastas do
-      begin
-        Write(ArquivoTXT, Trim(Caminho));
+      AssignFile(ArquivoTXT, CaminhoConfig);
+      try
+        Rewrite(ArquivoTXT);
 
-        // Adicione ponto e vírgula ao final de cada caminho, exceto para o último
-        if Caminho <> ListaDePastas.Last then
-          Write(ArquivoTXT, ';');
-
-        WriteLn(ArquivoTXT);
+        // Escreva os caminhos das pastas no arquivo ConfigCaminho.txt
+          WriteLn(ArquivoTXT, Trim(EdCheckout.Text));
+      finally
+        // Feche o arquivo
+        CloseFile(ArquivoTXT);
       end;
-
-      ShowMessage('Caminhos salvos com sucesso em ' + CaminhoConfig);
     finally
-      // Feche o arquivo
-      CloseFile(ArquivoTXT);
+      // Libere a memória da lista
+      ListaDePastas.Free;
     end;
-  finally
-    // Libere a memória da lista
-    ListaDePastas.Free;
   end;
 end;
 
@@ -120,6 +115,9 @@ begin
       // Adicione os caminhos ao EdCheckout, separando por ponto e vírgula
       for Caminho in ListaDePastas do
         EdCheckout.Text := EdCheckout.Text + Caminho + ';';
+
+      // Atualize a variável Caminho com as informações do EdCheckout.Text
+      Caminho := EdCheckout.Text;
     end
     else
     begin

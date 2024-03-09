@@ -82,6 +82,7 @@ var
   BatFilePath: string;
   StartupInfo: TStartupInfo;
   ProcessInfo: TProcessInformation;
+  PastaAnterior: string;
   ExitCode: DWORD;
 begin
   // Crie uma lista de strings para armazenar os caminhos das pastas
@@ -115,15 +116,12 @@ begin
     end;
 
     // Itere sobre os caminhos e execute os comandos Git
-    for i := 0 to ListaDePastas.Count - 1 do
+   for i := 0 to ListaDePastas.Count - 1 do
     begin
       Caminho := Trim(ListaDePastas[i]);
 
       if DirectoryExists(Caminho) then
       begin
-        // Obtenha o caminho do diretório pai
-        BatFilePath := TPath.Combine(Caminho, 'Config.bat');
-
         // Crie o ScriptBAT com os comandos Git
         ScriptBAT := '@echo off' + sLineBreak +
           Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
@@ -131,35 +129,46 @@ begin
           Format('"%s" --login -i -c "git -C ''%s'' pull"',
           [CaminhoGitBash, Caminho]);
 
+        // Obtenha o caminho do diretório pai
+        PastaAnterior := TPath.GetDirectoryName(Caminho);
+        BatFilePath := TPath.Combine(PastaAnterior, 'Config.bat');
+
         // Salve o ScriptBAT no arquivo .bat
         TFile.WriteAllText(BatFilePath, ScriptBAT);
 
-        // Execute o arquivo .bat se ele existir
-        // Execute o arquivo .bat se ele existir
-        if FileExists(BatFilePath) then
+        // Inicialize as estruturas StartupInfo e ProcessInfo
+        FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
+        FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
+
+        // Execute o arquivo .bat
+        if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil,
+          nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
         begin
-          // Inicialize as estruturas StartupInfo e ProcessInfo
-          FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
-          FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
+          // Aguarde até que o processo seja concluído
+          WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
 
-          // Execute o arquivo .bat
-          if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil,
-            nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
+          // Obtenha o código de saída do processo
+          GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
+
+          // Libere os recursos do processo
+          CloseHandle(ProcessInfo.hProcess);
+          CloseHandle(ProcessInfo.hThread);
+
+          // Verifique se o processo foi encerrado com êxito
+          if ExitCode = 0 then
           begin
-            // Aguarde até que o processo seja concluído
-            WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
-
-            // Obtenha o código de saída do processo
-            GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
-
-            // Libere os recursos do processo
-            CloseHandle(ProcessInfo.hProcess);
-            CloseHandle(ProcessInfo.hThread);
-          end;
+            // Remova o arquivo .bat somente após a conclusão bem-sucedida do processo
+            TFile.Delete(BatFilePath);
+          end
+          else
+            ShowMessage('Erro ao executar o processo. Código de saída: ' +
+              IntToStr(ExitCode));
         end
         else
-          ShowMessage('O arquivo .bat não foi encontrado: ' + BatFilePath);
-      end;
+          ShowMessage('Erro ao criar o processo. Código de erro: ' +
+            IntToStr(GetLastError));
+      end
+      else
     end;
 
     // Exiba uma mensagem informando que os comandos foram executados com sucesso

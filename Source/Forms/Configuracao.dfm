@@ -4,8 +4,8 @@ object Configuracoes: TConfiguracoes
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Configura'#231#227'o'
-  ClientHeight = 138
-  ClientWidth = 280
+  ClientHeight = 143
+  ClientWidth = 273
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2147,8 +2147,8 @@ object Configuracoes: TConfiguracoes
     TextHint = 'Caminho do sh.exe'
   end
   object BtSalvar: TBitBtn
-    Left = 99
-    Top = 108
+    Left = 27
+    Top = 109
     Width = 75
     Height = 25
     Caption = 'Salvar'
@@ -2171,6 +2171,15 @@ object Configuracoes: TConfiguracoes
     Height = 23
     TabOrder = 4
     TextHint = 'Pastas para realizar checkout'
+  end
+  object BitBtn1: TBitBtn
+    Left = 150
+    Top = 109
+    Width = 75
+    Height = 25
+    Caption = 'Limpar'
+    TabOrder = 5
+    OnClick = BitBtn1Click
   end
   object OpenDialog: TOpenDialog
     Filter = #39'Folders|*.none'#39

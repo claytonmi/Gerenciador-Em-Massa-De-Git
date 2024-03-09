@@ -82,6 +82,7 @@ var
   BatFilePath: string;
   StartupInfo: TStartupInfo;
   ProcessInfo: TProcessInformation;
+  PastaAnterior: string;
   ExitCode: DWORD;
 begin
   // Crie uma lista de strings para armazenar os caminhos das pastas
@@ -115,7 +116,7 @@ begin
     end;
 
     // Itere sobre os caminhos e execute os comandos Git
-    for i := 0 to ListaDePastas.Count - 1 do
+   for i := 0 to ListaDePastas.Count - 1 do
     begin
       Caminho := Trim(ListaDePastas[i]);
 
@@ -154,11 +155,20 @@ begin
           CloseHandle(ProcessInfo.hThread);
 
           // Verifique se o processo foi encerrado com êxito
-
-        end;
+          if ExitCode = 0 then
+          begin
+            // Remova o arquivo .bat somente após a conclusão bem-sucedida do processo
+            TFile.Delete(BatFilePath);
+          end
+          else
+            ShowMessage('Erro ao executar o processo. Código de saída: ' +
+              IntToStr(ExitCode));
         end
+        else
+          ShowMessage('Erro ao criar o processo. Código de erro: ' +
+            IntToStr(GetLastError));
+      end
       else
-        ShowMessage('O caminho não é um diretório válido: ' + Caminho);
     end;
 
     // Exiba uma mensagem informando que os comandos foram executados com sucesso
