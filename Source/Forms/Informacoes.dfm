@@ -4,7 +4,7 @@ object Info: TInfo
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Informa'#231#245'es'
-  ClientHeight = 356
+  ClientHeight = 334
   ClientWidth = 392
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -2128,6 +2128,7 @@ object Info: TInfo
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Position = poScreenCenter
+  OnKeyDown = FormKeyDown
   OnShow = FormShow
   TextHeight = 15
   object VersaoProduto: TLabel
@@ -2167,34 +2168,12 @@ object Info: TInfo
   end
   object LBDescProduto: TLabel
     Left = 8
-    Top = 311
+    Top = 285
     Width = 376
     Height = 39
     Alignment = taCenter
     AutoSize = False
     Enabled = False
-  end
-  object Label1: TLabel
-    Left = 130
-    Top = 281
-    Width = 51
-    Height = 17
-    Caption = 'Criador:'
-    Color = clBackground
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clNone
-    Font.Height = -13
-    Font.Name = 'Segoe UI'
-    Font.Style = [fsBold]
-    ParentColor = False
-    ParentFont = False
-  end
-  object Label2: TLabel
-    Left = 186
-    Top = 283
-    Width = 59
-    Height = 15
-    Caption = 'Clayton M.'
   end
   object Memo1: TMemo
     Left = 8

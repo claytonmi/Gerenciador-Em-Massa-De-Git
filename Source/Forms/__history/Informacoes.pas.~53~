@@ -1,0 +1,39 @@
+unit Informacoes;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TInfo = class(TForm)
+    VersaoProduto: TLabel;
+    LbNomeProduto: TLabel;
+    LBVersaoProduto: TLabel;
+    LBDescProduto: TLabel;
+    Label1: TLabel;
+    Label2: TLabel;
+    Memo1: TMemo;
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+
+  end;
+
+var
+  Info: TInfo;
+
+implementation
+
+{$R *.dfm}
+
+procedure TInfo.FormShow(Sender: TObject);
+begin
+      LbNomeProduto.Caption := 'Gerenciador em massa';
+      LBVersaoProduto.Caption := '1.0';
+      LBDescProduto.Caption := 'Simplifique o checkout e pull simultâneo em diversos' + #13#10 + ' projetos  com esta ferramenta.';
+end;
+end.
