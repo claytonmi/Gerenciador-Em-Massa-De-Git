@@ -10,7 +10,7 @@ O **Gerenciador em Massa** é uma ferramenta projetada para simplificar o proces
 Antes de iniciar o uso do Gerenciador em Massa com o código fonte em Object Pascal, é fundamental garantir que o Delphi 11 ou uma versão superior esteja devidamente instalado em seu ambiente de desenvolvimento.
 
 ### 📖 Documentação
-Para obter informações detalhadas sobre como utilizar o Gerenciador em Massa, consulte a nossa [documentação](https://github.com/claytonmi/Gerenciador-Em-Massa-De-Git/raw/main/Docs/Doc.odt)
+Para obter informações detalhadas sobre como utilizar o Gerenciador em Massa, consulte a nossa [documentação](https://github.com/claytonmi/Gerenciador-Em-Massa-De-Git/raw/main/Docs/Documentação_Gerenciador_em_massa_do_Git.odt)
 
 ### 📥 Download do Gerenciador
 Faça o download da versão mais recente do Gerenciador em Massa clicando [aqui](https://github.com/claytonmi/Gerenciador-Em-Massa-De-Git/raw/main/Source/Win32/Debug/Gerenciador.exe).
