@@ -116,7 +116,8 @@ begin
       Exit;
     end;
     // Salve os comandos Git no arquivo .bat
-    ScriptBAT.Add('@echo off'); // Adiciona a declaração "@echo off" no início do arquivo .bat
+    ScriptBAT.Add('@echo off');
+    // Adiciona a declaração "@echo off" no início do arquivo .bat
 
     // Itere sobre os caminhos e crie os comandos Git no ScriptBAT
     for i := 0 to ListaDePastas.Count - 1 do
@@ -134,7 +135,7 @@ begin
     end;
 
     // Obtenha o caminho do diretório onde o aplicativo está sendo executado
-    BatFilePath := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Config.bat');
+    BatFilePath := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Conf.bat');
 
     // Salve os comandos Git no arquivo .bat
     TFile.WriteAllText(BatFilePath, ScriptBAT.Text);
@@ -201,38 +202,37 @@ begin
   // Obtenha o caminho para a pasta "Meus Documentos"
   CaminhoDocumentos := TPath.GetDocumentsPath;
 
+  // Se o arquivo não existe, continue com o procedimento existente
+  if GrupoSelecao.ItemIndex = 3 then
+  begin
+    if (EdBrachEspecifica.Text <> '') then
+    begin
+      Branch := EdBrachEspecifica.Text;
+    end
+    else
+    begin
+      ShowMessage('O campo "Nome da Branch" está vazio!');
+      Exit;
+    end;
+  end;
+
   // Verifique se o arquivo ConfigCaminho.txt existe na pasta "Meus Documentos"
   if FileExists(TPath.Combine(CaminhoDocumentos, NomeArquivoConfigCaminho)) then
   begin
     // Se o arquivo existe, execute os comandos Git para cada pasta especificada
     ExecutarGitCheckoutPull(TPath.Combine(CaminhoDocumentos,
       NomeArquivoConfigCaminho));
+  end;
+
+  if CriarArquivoBAT(CaminhoCompleto) then
+  begin
+    // Execute o arquivo BAT
+    WinExec(PAnsiChar(AnsiString('cmd.exe /C "' + CaminhoCompleto + '"')),
+      SW_SHOWNORMAL);
   end
   else
-  begin
-    // Se o arquivo não existe, continue com o procedimento existente
-    if GrupoSelecao.ItemIndex = 3 then
-    begin
-      if (EdBrachEspecifica.Text <> '') then
-      begin
-        Branch := EdBrachEspecifica.Text;
-      end
-      else
-      begin
-        ShowMessage('O campo "Nome da Branch" está vazio!');
-        Exit;
-      end;
-    end;
+    ShowMessage('Erro ao criar o arquivo .BAT');
 
-    if CriarArquivoBAT(CaminhoCompleto) then
-    begin
-      // Execute o arquivo BAT
-      WinExec(PAnsiChar(AnsiString('cmd.exe /C "' + CaminhoCompleto + '"')),
-        SW_SHOWNORMAL);
-    end
-    else
-      ShowMessage('Erro ao criar o arquivo .BAT');
-  end;
 end;
 
 function CriarArquivoBAT(const Caminho: string): Boolean;

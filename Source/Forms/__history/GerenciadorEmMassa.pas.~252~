@@ -78,15 +78,16 @@ var
   GitCommand: string;
   i: Integer;
   Branch: string;
-  ScriptBAT: string;
+  ScriptBAT: TStringList;
   BatFilePath: string;
   StartupInfo: TStartupInfo;
   ProcessInfo: TProcessInformation;
-  PastaAnterior: string;
   ExitCode: DWORD;
 begin
   // Crie uma lista de strings para armazenar os caminhos das pastas
   ListaDePastas := TStringList.Create;
+  ScriptBAT := TStringList.Create;
+
   try
     // Leia o arquivo ConfigCaminho.txt
     ListaDePastas.Delimiter := ';';
@@ -114,70 +115,69 @@ begin
       ShowMessage('Selecione um Grupo no raio de grupo.');
       Exit;
     end;
+    // Salve os comandos Git no arquivo .bat
+    ScriptBAT.Add('@echo off'); // Adiciona a declaração "@echo off" no início do arquivo .bat
 
-    // Itere sobre os caminhos e execute os comandos Git
+    // Itere sobre os caminhos e crie os comandos Git no ScriptBAT
     for i := 0 to ListaDePastas.Count - 1 do
     begin
       Caminho := Trim(ListaDePastas[i]);
 
       if DirectoryExists(Caminho) then
       begin
-        // Crie o ScriptBAT com os comandos Git
-        ScriptBAT := '@echo off' + sLineBreak +
-          Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
-          [CaminhoGitBash, Caminho, Branch]) + sLineBreak +
-          Format('"%s" --login -i -c "git -C ''%s'' pull"',
-          [CaminhoGitBash, Caminho]);
+        ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
+          [CaminhoGitBash, Caminho, Branch]));
 
-        // Obtenha o caminho do diretório pai
-        PastaAnterior := TPath.GetDirectoryName(Caminho);
-        BatFilePath := TPath.Combine(PastaAnterior, 'Config.bat');
+        ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' pull"',
+          [CaminhoGitBash, Caminho]));
+      end;
+    end;
 
-        // Salve o ScriptBAT no arquivo .bat
-        TFile.WriteAllText(BatFilePath, ScriptBAT);
+    // Obtenha o caminho do diretório onde o aplicativo está sendo executado
+    BatFilePath := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Conf.bat');
 
-        // Inicialize as estruturas StartupInfo e ProcessInfo
-        FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
-        FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
+    // Salve os comandos Git no arquivo .bat
+    TFile.WriteAllText(BatFilePath, ScriptBAT.Text);
 
-        // Execute o arquivo .bat
-        if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil,
-          nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
-        begin
-          // Aguarde até que o processo seja concluído
-          WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+    // Inicialize as estruturas StartupInfo e ProcessInfo
+    FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
+    FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
 
-          // Obtenha o código de saída do processo
-          GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
+    // Execute o arquivo .bat
+    if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil, nil,
+      False, 0, nil, nil, StartupInfo, ProcessInfo) then
+    begin
+      // Aguarde até que o processo seja concluído
+      WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
 
-          // Libere os recursos do processo
-          CloseHandle(ProcessInfo.hProcess);
-          CloseHandle(ProcessInfo.hThread);
+      // Obtenha o código de saída do processo
+      GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
 
-          // Verifique se o processo foi encerrado com êxito
-          if ExitCode = 0 then
-          begin
-            // Remova o arquivo .bat somente após a conclusão bem-sucedida do processo
-            TFile.Delete(BatFilePath);
-          end
-          else
-            ShowMessage('Erro ao executar o processo. Código de saída: ' +
-              IntToStr(ExitCode));
-        end
-        else
-          ShowMessage('Erro ao criar o processo. Código de erro: ' +
-            IntToStr(GetLastError));
+      // Libere os recursos do processo
+      CloseHandle(ProcessInfo.hProcess);
+      CloseHandle(ProcessInfo.hThread);
+
+      // Verifique se o processo foi encerrado com êxito
+      if ExitCode = 0 then
+      begin
+        // Remova o arquivo .bat somente após a conclusão bem-sucedida do processo
+        TFile.Delete(BatFilePath);
       end
       else
-        ShowMessage('O caminho não é um diretório válido: ' + Caminho);
-    end;
+        ShowMessage('Erro ao executar o processo. Código de saída: ' +
+          IntToStr(ExitCode));
+    end
+    else
+      ShowMessage('Erro ao criar o processo. Código de erro: ' +
+        IntToStr(GetLastError));
 
     // Exiba uma mensagem informando que os comandos foram executados com sucesso
     ShowMessage
       ('Comandos Git executados com sucesso para os caminhos especificados.');
   finally
-    // Libere a memória da lista
+    // Libere a memória das listas
     ListaDePastas.Free;
+    ScriptBAT.Free;
   end;
 end;
 
