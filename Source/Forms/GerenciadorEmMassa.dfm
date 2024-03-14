@@ -2149,9 +2149,9 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     Height = 161
     Caption = 'Escolha uma op'#231#227'o'
     Items.Strings = (
-      'Passar tudo para develop (Develop)'
-      'Passar tudo para release (Delivery)'
-      'Passar tudo para main (Master)'
+      'Passar tudo para Develop'
+      'Passar tudo para Release'
+      'Passar tudo para Main'
       'Passar para branch Especifica')
     TabOrder = 1
     OnClick = GrupoSelecaoClick
