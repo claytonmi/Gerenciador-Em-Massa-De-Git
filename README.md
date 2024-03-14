@@ -2,7 +2,7 @@
 O **Gerenciador em Massa** é uma ferramenta projetada para simplificar o processo de checkout em branches em massa no Git. Este programa foi desenvolvido para facilitar a gestão de vários projetos, permitindo a troca rápida e eficiente entre branches de desenvolvimento. Além disso, o Gerenciador em Massa oferece a flexibilidade de realizar checkout em nomes específicos de branches.
 
 <p align="center">
-  <img src="https://github.com/claytonmi/Gerenciador-Em-Massa-De-Git/raw/main/Resources/GerenciadorEmMassa.png" alt="Projeto Gerenciador em Massa">
+  <img src="https://github.com/claytonmi/Gerenciador-Em-Massa-De-Git/raw/main/Resources/GerenciadorEmMassaDoGit.png" alt="Projeto Gerenciador em Massa">
 </p>
 
 ### 📋 Pré-requisitos para o Código Fonte:
