@@ -4,8 +4,8 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Gerenciador em massa'
-  ClientHeight = 227
-  ClientWidth = 328
+  ClientHeight = 209
+  ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2134,8 +2134,8 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   OnCreate = FormCreate
   TextHeight = 15
   object BtIniciar: TButton
-    Left = 72
-    Top = 198
+    Left = 47
+    Top = 180
     Width = 75
     Height = 25
     Caption = 'Iniciar'
@@ -2145,8 +2145,8 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   object GrupoSelecao: TRadioGroup
     Left = 8
     Top = 8
-    Width = 313
-    Height = 161
+    Width = 265
+    Height = 140
     Caption = 'Escolha uma op'#231#227'o'
     Items.Strings = (
       'Passar tudo para Develop'
@@ -2157,8 +2157,8 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     OnClick = GrupoSelecaoClick
   end
   object BtSair: TButton
-    Left = 176
-    Top = 198
+    Left = 143
+    Top = 180
     Width = 75
     Height = 25
     Caption = 'Sair'
@@ -2166,24 +2166,30 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     OnClick = BtSairClick
   end
   object EdBrachEspecifica: TEdit
-    Left = 200
-    Top = 136
-    Width = 105
+    Left = 18
+    Top = 154
+    Width = 119
     Height = 23
+    Cursor = crIBeam
     TabOrder = 3
     TextHint = 'Nome da Branch'
     Visible = False
   end
   object CheckTag: TCheckBox
-    Left = 200
-    Top = 165
+    Left = 143
+    Top = 157
     Width = 113
     Height = 17
+    Cursor = crHandPoint
     Caption = 'Mudar para Tag'
+    Color = clBtnText
+    ParentColor = False
     TabOrder = 4
+    Visible = False
+    OnClick = CheckTagClick
   end
   object MainMenu1: TMainMenu
-    Left = 280
+    Left = 240
     Top = 8
     object Menu1: TMenuItem
       Bitmap.Data = {

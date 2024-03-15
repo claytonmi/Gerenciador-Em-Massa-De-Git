@@ -2152,7 +2152,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
       'Passar tudo para Develop'
       'Passar tudo para Release'
       'Passar tudo para Main'
-      'Passar para branch Especifica')
+      'Passar para Branch/Tag Especifica')
     TabOrder = 0
     OnClick = GrupoSelecaoClick
   end
