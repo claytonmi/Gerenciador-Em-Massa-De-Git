@@ -19,6 +19,7 @@ type
     BtConfiguracoes: TMenuItem;
     BtInfo1: TMenuItem;
     Soluesdepossiveiserros1: TMenuItem;
+    CheckTag: TCheckBox;
     procedure GrupoSelecaoClick(Sender: TObject);
     procedure BtSairClick(Sender: TObject);
     procedure BtIniciarClick(Sender: TObject);
@@ -27,6 +28,7 @@ type
     procedure BtInfo1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Soluesdepossiveiserros1Click(Sender: TObject);
+    procedure CheckTagClick(Sender: TObject);
   private
     { Private declarations }
     function BuscarArquivoExe(const Diretorio, NomeArquivo: string): string;
@@ -40,6 +42,7 @@ type
 
   var
     Branch: string;
+    check: Boolean;
     GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit;
     CaminhoCompleto: string;
     CaminhoGitBash: string;
@@ -77,7 +80,6 @@ var
   Caminho: string;
   GitCommand: string;
   i: Integer;
-  Branch: string;
   ScriptBAT: TStringList;
   BatFilePath: string;
   StartupInfo: TStartupInfo;
@@ -101,20 +103,6 @@ begin
       Exit;
     end;
 
-    // Verifique qual branch será usado com base no GrupoSelecao
-    case GrupoSelecao.ItemIndex of
-      0:
-        Branch := 'develop';
-      1:
-        Branch := 'release';
-      2:
-        Branch := 'main';
-      3:
-        Branch := EdBrachEspecifica.Text;
-    else
-      ShowMessage('Selecione um Grupo no raio de grupo.');
-      Exit;
-    end;
     // Salve os comandos Git no arquivo .bat
     ScriptBAT.Add('@echo off');
     // Adiciona a declaração "@echo off" no início do arquivo .bat
@@ -126,11 +114,24 @@ begin
 
       if DirectoryExists(Caminho) then
       begin
-        ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
-          [CaminhoGitBash, Caminho, Branch]));
+        if CheckTag.Enabled = false then
+        begin
+          ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
+            [CaminhoGitBash, Caminho, Branch]));
 
-        ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' pull"',
-          [CaminhoGitBash, Caminho]));
+          ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' pull"',
+            [CaminhoGitBash, Caminho]));
+        end
+        else
+        begin
+          ScriptBAT.Add
+            (Format('"%s" --login -i -c "git -C ''%s'' checkout --no-track tags/%s"',
+            [CaminhoGitBash, Caminho, Branch]));
+          ScriptBAT.Add
+            (Format('"%s" --login -i -c "git -C ''%s'' checkout -b Branch_%s"',
+            [CaminhoGitBash, Caminho, Branch]));
+        end;
+
       end;
     end;
 
@@ -146,7 +147,7 @@ begin
 
     // Execute o arquivo .bat
     if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil, nil,
-      False, 0, nil, nil, StartupInfo, ProcessInfo) then
+      false, 0, nil, nil, StartupInfo, ProcessInfo) then
     begin
       // Aguarde até que o processo seja concluído
       WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
@@ -197,6 +198,21 @@ begin
     Exit;
   end;
 
+  // Verifique qual branch será usado com base no GrupoSelecao
+  case GrupoSelecao.ItemIndex of
+    0:
+      Branch := 'develop';
+    1:
+      Branch := 'release';
+    2:
+      Branch := 'main';
+    3:
+      Branch := EdBrachEspecifica.Text;
+  else
+    ShowMessage('Selecione um Grupo no raio de grupo.');
+    Exit;
+  end;
+
   CaminhoCompleto := ExtractFilePath(ParamStr(0)) + NomeArquivoBAT;
 
   // Obtenha o caminho para a pasta "Meus Documentos"
@@ -208,6 +224,11 @@ begin
     if (EdBrachEspecifica.Text <> '') then
     begin
       Branch := EdBrachEspecifica.Text;
+      if CheckTag.Enabled = True then
+      begin
+        ShowMessage('Será criado um branch com o nome da tag!');
+        check := CheckTag.Enabled;
+      end;
     end
     else
     begin
@@ -240,37 +261,26 @@ var
   ScriptBAT: string;
   Arquivo: TextFile;
 begin
+
   try
+
     AssignFile(Arquivo, Caminho);
     Rewrite(Arquivo);
 
-    if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 0 then
-    begin
-      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
-        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout develop"'
-        + sLineBreak + '"' + CaminhoGitBash +
-        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
-    end
-    else if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 1 then
-    begin
-      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
-        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout release"'
-        + sLineBreak + '"' + CaminhoGitBash +
-        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
-    end
-    else if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 2 then
-    begin
-      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
-        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout main"'
-        + sLineBreak + '"' + CaminhoGitBash +
-        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
-    end
-    else if GerenciadorEmMassaaDeGit.GrupoSelecao.ItemIndex = 3 then
+    if check = false then
     begin
       ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
         '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout '
         + Branch + '"' + sLineBreak + '"' + CaminhoGitBash +
         '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
+    end
+    else
+    begin
+      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout --no-track tags/'
+        + Branch + '"' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout -b Branch_'
+        + Branch + '"';
     end;
 
     // Escreva o script no arquivo
@@ -279,7 +289,7 @@ begin
 
     Result := True;
   except
-    Result := False;
+    Result := false;
   end;
 end;
 
@@ -329,11 +339,26 @@ begin
     Result := Arquivos[0];
 end;
 
+procedure TGerenciadorEmMassaaDeGit.CheckTagClick(Sender: TObject);
+begin
+  if CheckTag.Checked = True then
+  begin
+    EdBrachEspecifica.TextHint := 'Numero da Tag';
+  end
+  else
+    EdBrachEspecifica.TextHint := 'Nome da Branch';
+end;
+
 procedure TGerenciadorEmMassaaDeGit.FormCreate(Sender: TObject);
 var
   StreamWriter: TStreamWriter;
   StreamReader: TStreamReader;
 begin
+  EdBrachEspecifica.Visible := false;
+  CheckTag.Visible := false;
+  GerenciadorEmMassaaDeGit.ClientHeight := 186;
+  BtIniciar.Top := 153;
+  BtSair.Top := 153;
   Config := TPath.Combine(TPath.GetDocumentsPath, 'Config.txt');
 
   try
@@ -391,9 +416,19 @@ begin
   if GrupoSelecao.ItemIndex = 3 then
   begin
     EdBrachEspecifica.Visible := True;
+    CheckTag.Visible := True;
+    GerenciadorEmMassaaDeGit.ClientHeight := 209;
+    BtIniciar.Top := 182;
+    BtSair.Top := 182;
   end
   else
-    EdBrachEspecifica.Visible := False;
+  begin
+    EdBrachEspecifica.Visible := false;
+    CheckTag.Visible := false;
+    GerenciadorEmMassaaDeGit.ClientHeight := 186;
+    BtIniciar.Top := 153;
+    BtSair.Top := 153;
+  end;
 end;
 
 end.

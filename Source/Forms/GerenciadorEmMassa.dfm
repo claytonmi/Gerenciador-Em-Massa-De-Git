@@ -5,7 +5,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   BorderStyle = bsSingle
   Caption = 'Gerenciador em massa'
   ClientHeight = 209
-  ClientWidth = 328
+  ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2134,31 +2134,31 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   OnCreate = FormCreate
   TextHeight = 15
   object BtIniciar: TButton
-    Left = 72
-    Top = 176
+    Left = 47
+    Top = 180
     Width = 75
     Height = 25
     Caption = 'Iniciar'
-    TabOrder = 0
+    TabOrder = 1
     OnClick = BtIniciarClick
   end
   object GrupoSelecao: TRadioGroup
-    Left = 7
+    Left = 8
     Top = 8
-    Width = 313
-    Height = 161
+    Width = 265
+    Height = 140
     Caption = 'Escolha uma op'#231#227'o'
     Items.Strings = (
       'Passar tudo para Develop'
       'Passar tudo para Release'
       'Passar tudo para Main'
       'Passar para branch Especifica')
-    TabOrder = 1
+    TabOrder = 0
     OnClick = GrupoSelecaoClick
   end
   object BtSair: TButton
-    Left = 176
-    Top = 176
+    Left = 143
+    Top = 180
     Width = 75
     Height = 25
     Caption = 'Sair'
@@ -2166,17 +2166,31 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     OnClick = BtSairClick
   end
   object EdBrachEspecifica: TEdit
-    Left = 200
-    Top = 136
-    Width = 105
+    Left = 18
+    Top = 154
+    Width = 119
     Height = 23
+    Cursor = crIBeam
     TabOrder = 3
     TextHint = 'Nome da Branch'
     Visible = False
   end
+  object CheckTag: TCheckBox
+    Left = 143
+    Top = 157
+    Width = 113
+    Height = 17
+    Cursor = crHandPoint
+    Caption = 'Mudar para Tag'
+    Color = clBtnText
+    ParentColor = False
+    TabOrder = 4
+    Visible = False
+    OnClick = CheckTagClick
+  end
   object MainMenu1: TMainMenu
-    Left = 288
-    Top = 65520
+    Left = 240
+    Top = 8
     object Menu1: TMenuItem
       Bitmap.Data = {
         F6060000424DF606000000000000360000002800000018000000180000000100
