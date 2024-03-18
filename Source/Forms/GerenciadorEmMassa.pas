@@ -114,7 +114,7 @@ begin
 
       if DirectoryExists(Caminho) then
       begin
-        if CheckTag.Enabled = false then
+        if CheckTag.Checked = false then
         begin
           ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
             [CaminhoGitBash, Caminho, Branch]));
