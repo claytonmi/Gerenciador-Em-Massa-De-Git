@@ -224,7 +224,7 @@ begin
     if (EdBrachEspecifica.Text <> '') then
     begin
       Branch := EdBrachEspecifica.Text;
-      if CheckTag.Enabled = True then
+      if CheckTag.Checked = True then
       begin
         ShowMessage('Será criado um branch com o nome da tag!');
         check := CheckTag.Checked;
