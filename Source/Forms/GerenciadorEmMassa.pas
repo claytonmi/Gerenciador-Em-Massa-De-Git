@@ -227,7 +227,7 @@ begin
       if CheckTag.Enabled = True then
       begin
         ShowMessage('Será criado um branch com o nome da tag!');
-        check := CheckTag.Enabled;
+        check := CheckTag.Checked;
       end;
     end
     else
