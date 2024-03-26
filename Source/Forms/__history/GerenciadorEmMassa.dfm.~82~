@@ -2130,7 +2130,6 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Menu = MainMenu1
   Position = poScreenCenter
-  StyleName = 'Windows10'
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -2147,7 +2146,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   object GrupoSelecao: TRadioGroup
     Left = 8
     Top = 8
-    Width = 265
+    Width = 248
     Height = 140
     Caption = 'Escolha uma op'#231#227'o'
     Items.Strings = (
@@ -2191,7 +2190,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     OnClick = CheckTagClick
   end
   object MainMenu1: TMainMenu
-    Left = 240
+    Left = 224
     Top = 8
     object Menu1: TMenuItem
       Bitmap.Data = {
@@ -2373,10 +2372,6 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
           FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
         Caption = 'Info'
         OnClick = BtInfo1Click
-      end
-      object ema1: TMenuItem
-        Caption = 'Tema'
-        OnClick = ema1Click
       end
     end
     object Soluesdepossiveiserros1: TMenuItem

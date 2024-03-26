@@ -5,7 +5,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   BorderStyle = bsSingle
   Caption = 'Gerenciador em massa'
   ClientHeight = 209
-  ClientWidth = 271
+  ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2130,7 +2130,6 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Menu = MainMenu1
   Position = poScreenCenter
-  StyleName = 'Windows10'
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -2147,7 +2146,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   object GrupoSelecao: TRadioGroup
     Left = 8
     Top = 8
-    Width = 260
+    Width = 248
     Height = 140
     Caption = 'Escolha uma op'#231#227'o'
     Items.Strings = (

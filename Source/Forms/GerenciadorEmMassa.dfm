@@ -2130,7 +2130,6 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Menu = MainMenu1
   Position = poScreenCenter
-  StyleName = 'Tablet Dark'
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
