@@ -2130,8 +2130,10 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Menu = MainMenu1
   Position = poScreenCenter
+  StyleName = 'Tablet Dark'
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   TextHeight = 15
   object BtIniciar: TButton
     Left = 47
@@ -2145,7 +2147,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   object GrupoSelecao: TRadioGroup
     Left = 8
     Top = 8
-    Width = 265
+    Width = 248
     Height = 140
     Caption = 'Escolha uma op'#231#227'o'
     Items.Strings = (
@@ -2189,7 +2191,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     OnClick = CheckTagClick
   end
   object MainMenu1: TMainMenu
-    Left = 240
+    Left = 224
     Top = 8
     object Menu1: TMenuItem
       Bitmap.Data = {

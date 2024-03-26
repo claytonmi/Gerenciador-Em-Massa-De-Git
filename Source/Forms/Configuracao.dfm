@@ -2128,6 +2128,8 @@ object Configuracoes: TConfiguracoes
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Position = poScreenCenter
+  StyleName = 'Tablet Dark'
+  OnCreate = FormCreate
   TextHeight = 15
   object BtPesquisa: TButton
     Left = 231

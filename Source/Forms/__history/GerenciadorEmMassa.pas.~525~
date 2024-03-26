@@ -1,0 +1,563 @@
+unit GerenciadorEmMassa;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, ShellAPI,
+  Vcl.Menus, Configuracao, System.IOUtils, System.Types, Informacoes, Solucoes,
+  Vcl.Themes, System.IniFiles, ShlObj;
+
+type
+  TGerenciadorEmMassaaDeGit = class(TForm)
+    BtIniciar: TButton;
+    GrupoSelecao: TRadioGroup;
+    BtSair: TButton;
+    EdBrachEspecifica: TEdit;
+    MainMenu1: TMainMenu;
+    Menu1: TMenuItem;
+    BtConfiguracoes: TMenuItem;
+    BtInfo1: TMenuItem;
+    Soluesdepossiveiserros1: TMenuItem;
+    CheckTag: TCheckBox;
+    ema1: TMenuItem;
+    procedure GrupoSelecaoClick(Sender: TObject);
+    procedure BtSairClick(Sender: TObject);
+    procedure BtIniciarClick(Sender: TObject);
+    procedure BtConfiguracoesClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure BtInfo1Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure Soluesdepossiveiserros1Click(Sender: TObject);
+    procedure CheckTagClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure ema1Click(Sender: TObject);
+  private
+    { Private declarations }
+    LockFilePath: string; // Caminho completo para o arquivo de trava
+    LockFileHandle: THandle; // Identificador do arquivo de trava
+    function CheckSingleInstance: Boolean;
+    function BuscarArquivoExe(const Diretorio, NomeArquivo: string): string;
+    procedure ExecutarGitCheckoutPull(const CaminhoArquivo: string);
+    procedure DeleteLockFile;
+  public
+    { Public declarations }
+    Config: string;
+    Comando, Comando2: string end;
+
+    function CriarArquivoBAT(const Caminho: string): Boolean;
+
+  var
+    Branch: string;
+    check: Boolean;
+    GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit;
+    CaminhoCompleto: string;
+    CaminhoGitBash: string;
+
+implementation
+
+{$R *.dfm}
+
+procedure TGerenciadorEmMassaaDeGit.Soluesdepossiveiserros1Click
+  (Sender: TObject);
+begin
+  Application.CreateForm(TSolucoesDeErro, SolucoesDeErro);
+  SolucoesDeErro.showModal;
+  FreeAndNil(SolucoesDeErro);
+end;
+
+procedure TGerenciadorEmMassaaDeGit.BtConfiguracoesClick(Sender: TObject);
+begin
+  Application.CreateForm(TConfiguracoes, Configuracoes);
+  Configuracoes.showModal;
+  FreeAndNil(Configuracoes);
+end;
+
+procedure TGerenciadorEmMassaaDeGit.BtInfo1Click(Sender: TObject);
+begin
+  Application.CreateForm(TInfo, Info);
+  Info.showModal;
+  FreeAndNil(Info);
+end;
+
+procedure TGerenciadorEmMassaaDeGit.ExecutarGitCheckoutPull
+  (const CaminhoArquivo: string);
+var
+  ListaDePastas: TStringList;
+  Caminho: string;
+  GitCommand: string;
+  i: Integer;
+  ScriptBAT: TStringList;
+  BatFilePath: string;
+  StartupInfo: TStartupInfo;
+  ProcessInfo: TProcessInformation;
+  ExitCode: DWORD;
+begin
+  // Crie uma lista de strings para armazenar os caminhos das pastas
+  ListaDePastas := TStringList.Create;
+  ScriptBAT := TStringList.Create;
+
+  try
+    // Leia o arquivo ConfigCaminho.txt
+    ListaDePastas.Delimiter := ';';
+    ListaDePastas.StrictDelimiter := True;
+    ListaDePastas.DelimitedText := TFile.ReadAllText(CaminhoArquivo);
+
+    // Verifique se a lista está vazia
+    if ListaDePastas.Count = 0 then
+    begin
+      ShowMessage('A lista de pastas está vazia.');
+      BtIniciar.Enabled := True;
+      Exit;
+    end;
+
+    // Salve os comandos Git no arquivo .bat
+    ScriptBAT.Add('@echo off');
+    // Adiciona a declaração "@echo off" no início do arquivo .bat
+
+    // Itere sobre os caminhos e crie os comandos Git no ScriptBAT
+    for i := 0 to ListaDePastas.Count - 1 do
+    begin
+      Caminho := Trim(ListaDePastas[i]);
+
+      if DirectoryExists(Caminho) then
+      begin
+        if CheckTag.Checked = false then
+        begin
+          ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' checkout %s"',
+            [CaminhoGitBash, Caminho, Branch]));
+          ScriptBAT.Add(Format('"%s" --login -i -c "git -C ''%s'' pull"',
+            [CaminhoGitBash, Caminho]));
+        end
+        else
+        begin
+          ScriptBAT.Add
+            (Format('"%s" --login -i -c "git -C ''%s'' show-ref --tags %s" > nul 2>&1 && (',
+            [CaminhoGitBash, Caminho, Branch]));
+          // Tag existe, adicionar linhas ao script BAT
+          ScriptBAT.Add
+            (Format('"%s" --login -i -c "git -C ''%s'' checkout --no-track tags/%s"',
+            [CaminhoGitBash, Caminho, Branch]));
+          ScriptBAT.Add
+            (Format('"%s" --login -i -c "git -C ''%s'' checkout -b Branch_%s"',
+            [CaminhoGitBash, Caminho, Branch]));
+          ScriptBAT.Add(') || (');
+          ScriptBAT.Add('');
+          ScriptBAT.Add
+            (Format('echo Nao existe a tag ''%s'' no projeto do caminho: ''%S''',
+            [Branch, Caminho]));
+          ScriptBAT.Add('');
+          ScriptBAT.Add('pause');
+          ScriptBAT.Add(')');
+        end;
+      end;
+    end;
+
+    // Obtenha o caminho do diretório onde o aplicativo está sendo executado
+    BatFilePath := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Conf.bat');
+
+    // Salve os comandos Git no arquivo .bat
+    TFile.WriteAllText(BatFilePath, ScriptBAT.Text);
+
+    // Inicialize as estruturas StartupInfo e ProcessInfo
+    FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
+    FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
+
+    // Execute o arquivo .bat
+    if CreateProcess(nil, PChar('cmd.exe /C "' + BatFilePath + '"'), nil, nil,
+      false, 0, nil, nil, StartupInfo, ProcessInfo) then
+    begin
+      // Aguarde até que o processo seja concluído
+      WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+
+      // Obtenha o código de saída do processo
+      GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
+
+      // Libere os recursos do processo
+      CloseHandle(ProcessInfo.hProcess);
+      CloseHandle(ProcessInfo.hThread);
+
+      // Verifique se o processo foi encerrado com êxito
+      if ExitCode = 0 then
+      begin
+        // Remova o arquivo .bat somente após a conclusão bem-sucedida do processo
+        TFile.Delete(BatFilePath);
+      end
+      else
+        ShowMessage('Erro ao executar o processo. Código de saída: ' +
+          IntToStr(ExitCode));
+    end
+    else
+    begin
+      ShowMessage('Erro ao criar o processo. Código de erro: ' +
+        IntToStr(GetLastError));
+    end;
+
+  finally
+    // Libere a memória das listas
+    ListaDePastas.Free;
+    ScriptBAT.Free;
+  end;
+  BtIniciar.Enabled := True;
+end;
+
+procedure TGerenciadorEmMassaaDeGit.BtIniciarClick(Sender: TObject);
+const
+  NomeArquivoBAT = 'Conf.bat';
+  NomeArquivoConfigCaminho = 'ConfigCaminho.txt';
+  PastaMeusDocumentos = 'Meus Documentos';
+var
+  CaminhoDocumentos: string;
+begin
+  BtIniciar.Enabled := false;
+  // Verifique se algum item foi selecionado no GrupoSelecao
+  if GrupoSelecao.ItemIndex = -1 then
+  begin
+    ShowMessage('Escolha uma opção no grupo para continuar.');
+    BtIniciar.Enabled := True;
+    Exit;
+  end;
+
+  // Verifique qual branch será usado com base no GrupoSelecao
+  case GrupoSelecao.ItemIndex of
+    0:
+      Branch := 'develop';
+    1:
+      Branch := 'release';
+    2:
+      Branch := 'main';
+    3:
+      Branch := EdBrachEspecifica.Text;
+  else
+    ShowMessage('Selecione um Grupo no raio de grupo.');
+    BtIniciar.Enabled := True;
+    Exit;
+  end;
+
+  CaminhoCompleto := ExtractFilePath(ParamStr(0)) + NomeArquivoBAT;
+
+  // Obtenha o caminho para a pasta "Meus Documentos"
+  CaminhoDocumentos := TPath.GetDocumentsPath;
+
+  // Se o arquivo não existe, continue com o procedimento existente
+  if GrupoSelecao.ItemIndex = 3 then
+  begin
+    if (EdBrachEspecifica.Text <> '') then
+    begin
+      Branch := EdBrachEspecifica.Text;
+      if CheckTag.Checked = True then
+      begin
+        check := CheckTag.Checked;
+      end;
+    end
+    else
+    begin
+      ShowMessage('O campo "Nome da Branch" está vazio!');
+      BtIniciar.Enabled := True;
+      Exit;
+    end;
+  end;
+
+  // Verifique se o arquivo ConfigCaminho.txt existe na pasta "Meus Documentos"
+  if FileExists(TPath.Combine(CaminhoDocumentos, NomeArquivoConfigCaminho)) then
+  begin
+    // Se o arquivo existe, execute os comandos Git para cada pasta especificada
+    ExecutarGitCheckoutPull(TPath.Combine(CaminhoDocumentos,
+      NomeArquivoConfigCaminho));
+  end
+  else if CriarArquivoBAT(CaminhoCompleto) then
+  begin
+    // Execute o arquivo BAT
+    WinExec(PAnsiChar(AnsiString('cmd.exe /C "' + CaminhoCompleto + '"')),
+      SW_SHOWNORMAL);
+  end
+  else
+  begin
+    ShowMessage('Erro ao criar o arquivo .BAT');
+  end;
+  BtIniciar.Enabled := True;
+end;
+
+function CriarArquivoBAT(const Caminho: string): Boolean;
+var
+  ScriptBAT: string;
+  Arquivo: TextFile;
+begin
+
+  try
+    AssignFile(Arquivo, Caminho);
+    Rewrite(Arquivo);
+
+    if check = false then
+    begin
+
+      ScriptBAT := '@echo off' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} checkout '
+        + Branch + '"' + sLineBreak + '"' + CaminhoGitBash +
+        '" --login -i -c "find . -name ''.git'' -type d | sed ''s/\/.git//'' | xargs -P10 -I{} git -C {} pull"';
+
+      // Escreva o script no arquivo
+      Write(Arquivo, ScriptBAT);
+      CloseFile(Arquivo);
+
+      Result := True;
+    end
+    else
+    begin
+      ShowMessage
+        ('A criação de uma branch a partir de uma tag deve ser feita selecionando as pastas em configuração.');
+      Result := false;
+    end;
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Ocorreu um erro ao gerar o script BAT: ' + E.Message);
+      Result := false;
+    end;
+  end;
+end;
+
+procedure TGerenciadorEmMassaaDeGit.BtSairClick(Sender: TObject);
+begin
+
+  CaminhoCompleto := ExtractFilePath(ParamStr(0)) + 'Conf.bat';
+
+  try
+    // Verifique se o arquivo existe antes de tentar excluí-lo
+    if FileExists(CaminhoCompleto) then
+      DeleteFile(CaminhoCompleto);
+    Application.Terminate;
+
+  except
+    on E: Exception do
+      ShowMessage('Erro ao excluir o arquivo BAT: ' + E.Message);
+  end;
+end;
+
+procedure TGerenciadorEmMassaaDeGit.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  CaminhoCompleto := ExtractFilePath(ParamStr(0)) + 'Conf.bat';
+
+  try
+    // Verifique se o arquivo existe antes de tentar excluí-lo
+    if FileExists(CaminhoCompleto) then
+      DeleteFile(CaminhoCompleto);
+    Application.Terminate;
+  except
+    on E: Exception do
+      ShowMessage('Erro ao excluir o arquivo BAT: ' + E.Message);
+  end;
+
+end;
+
+procedure TGerenciadorEmMassaaDeGit.DeleteLockFile;
+var
+  Result: Boolean;
+begin
+  // Verificar se o identificador do arquivo de trava é válido
+  if LockFileHandle <> INVALID_HANDLE_VALUE then
+  begin
+    // Fechar o identificador do arquivo
+    CloseHandle(LockFileHandle);
+    LockFileHandle := INVALID_HANDLE_VALUE;
+  end;
+
+  // Tentar excluir o arquivo de trava
+  Result := DeleteFile(LockFilePath);
+end;
+
+function GetMyDocumentsFolderPath: string;
+var
+  Path: array [0..MAX_PATH] of Char;
+begin
+  if SHGetFolderPath(0, CSIDL_PERSONAL, 0, 0, Path) = S_OK then
+    Result := Path
+  else
+    Result := '';
+end;
+
+procedure TGerenciadorEmMassaaDeGit.ema1Click(Sender: TObject);
+var
+  IniFile: TIniFile;
+  IniFilePath: string;
+  CurrentStyle: string;
+  NewStyle: string;
+begin
+  IniFilePath := IncludeTrailingPathDelimiter(GetMyDocumentsFolderPath) + 'config.ini';
+  IniFile := TIniFile.Create(IniFilePath);
+  try
+    // Lê o estilo atual do arquivo ini
+    CurrentStyle := IniFile.ReadString('AppSettings', 'StyleName', '');
+
+    // Define o novo estilo oposto ao atual
+    if CurrentStyle = 'Tablet Dark' then
+      NewStyle := 'Tablet Light'
+    else
+      NewStyle := 'Tablet Dark';
+
+    // Altera o estilo do sistema
+    TStyleManager.SetStyle(NewStyle);
+
+    // Escreve o novo estilo no arquivo ini
+    IniFile.WriteString('AppSettings', 'StyleName', NewStyle);
+  finally
+    IniFile.Free;
+  end;
+end;
+
+function TGerenciadorEmMassaaDeGit.BuscarArquivoExe(const Diretorio,
+  NomeArquivo: string): string;
+var
+  Arquivos: TArray<string>;
+begin
+  Result := '';
+  Arquivos := TDirectory.GetFiles(Diretorio, NomeArquivo,
+    TSearchOption.soTopDirectoryOnly);
+
+  if Length(Arquivos) > 0 then
+    Result := Arquivos[0];
+end;
+
+procedure TGerenciadorEmMassaaDeGit.CheckTagClick(Sender: TObject);
+begin
+  if CheckTag.Checked = True then
+  begin
+    EdBrachEspecifica.TextHint := 'Numero da Tag';
+  end
+  else
+    EdBrachEspecifica.TextHint := 'Nome da Branch';
+end;
+
+procedure TGerenciadorEmMassaaDeGit.FormCreate(Sender: TObject);
+var
+  StreamWriter: TStreamWriter;
+  StreamReader: TStreamReader;
+  IniFile: TIniFile;
+  StyleName: string;
+  IniFilePath: string;
+begin
+  IniFilePath := IncludeTrailingPathDelimiter(GetMyDocumentsFolderPath) + 'config.ini';
+  IniFile := TIniFile.Create(IniFilePath);
+  try
+    // Carrega o nome do estilo salvo nas configurações do usuário
+    StyleName := IniFile.ReadString('AppSettings', 'StyleName', '');
+
+    // Se o nome do estilo estiver vazio, use o estilo padrão do sistema
+    if StyleName = '' then
+      StyleName := TStyleManager.SystemStyle.Name;
+
+    // Configura o estilo
+    TStyleManager.SetStyle(StyleName);
+  finally
+    IniFile.Free;
+  end;
+
+  // Construir o caminho completo para o arquivo de trava na pasta "Meus Documentos"
+  LockFilePath := TPath.Combine(TPath.GetDocumentsPath, 'LockFile.lock');
+  // Verificar instância única ao criar o formulário
+  if CheckSingleInstance then
+  begin
+    ShowMessage('O aplicativo já está em execução.');
+    Application.Terminate;
+  end;
+
+  // Criar arquivo de trava
+  LockFileHandle := CreateFile(PChar(LockFilePath), GENERIC_WRITE, 0, nil,
+    CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
+  if LockFileHandle = INVALID_HANDLE_VALUE then
+  begin
+    ShowMessage('Erro ao criar arquivo de trava.');
+    Application.Terminate;
+  end;
+
+  EdBrachEspecifica.Visible := false;
+  CheckTag.Visible := false;
+  GerenciadorEmMassaaDeGit.ClientHeight := 200;
+  BtIniciar.Top := 153;
+  BtSair.Top := 153;
+  Config := TPath.Combine(TPath.GetDocumentsPath, 'Config.txt');
+
+  try
+    // Verifica se o arquivo existe
+    if FileExists(Config) then
+    begin
+      // Se existe, abre o arquivo para leitura
+      StreamReader := TStreamReader.Create(Config);
+      try
+        // Lê o conteúdo do arquivo e coloca na variável CaminhoGitBash
+        CaminhoGitBash := StreamReader.ReadToEnd;
+      finally
+        // Fecha o StreamReader
+        StreamReader.Free;
+      end;
+    end
+    else
+    begin
+      // Se o arquivo não existe, procura no C: por sh.exe
+      CaminhoGitBash := BuscarArquivoExe('C:\', 'sh.exe');
+
+      // Se encontrou o arquivo, salva o caminho no arquivo Config.txt
+      if CaminhoGitBash <> '' then
+      begin
+        StreamWriter := TStreamWriter.Create(Config);
+        try
+          StreamWriter.Write(CaminhoGitBash);
+        finally
+          StreamWriter.Free;
+        end;
+        ShowMessage('Caminho do arquivo salvo com sucesso!');
+      end
+      else
+      begin
+        // Se não encontrou o arquivo, define um valor padrão
+        CaminhoGitBash := 'C:\Program Files\Git\bin\sh.exe';
+        StreamWriter := TStreamWriter.Create(Config);
+        try
+          StreamWriter.Write(CaminhoGitBash);
+        finally
+          StreamWriter.Free;
+        end;
+        ShowMessage
+          ('Arquivo Config.txt foi criado com valor padrão do local do sh.exe, caso esteja instalado em outro local favor ir em configuração e alterar o caminho.');
+      end;
+    end;
+  except
+    on E: Exception do
+      ShowMessage('Erro ao carregar o arquivo: ' + E.Message);
+  end;
+end;
+
+procedure TGerenciadorEmMassaaDeGit.FormDestroy(Sender: TObject);
+begin
+  DeleteLockFile;
+end;
+
+function TGerenciadorEmMassaaDeGit.CheckSingleInstance: Boolean;
+begin
+  // Verifica se o mutex já existe (ou seja, se o aplicativo já está em execução)
+  Result := FileExists(LockFilePath);
+end;
+
+procedure TGerenciadorEmMassaaDeGit.GrupoSelecaoClick(Sender: TObject);
+begin
+  if GrupoSelecao.ItemIndex = 3 then
+  begin
+    EdBrachEspecifica.Visible := True;
+    CheckTag.Visible := True;
+    GerenciadorEmMassaaDeGit.ClientHeight := 209;
+    BtIniciar.Top := 182;
+    BtSair.Top := 182;
+  end
+  else
+  begin
+    EdBrachEspecifica.Visible := false;
+    CheckTag.Visible := false;
+    GerenciadorEmMassaaDeGit.ClientHeight := 187;
+    BtIniciar.Top := 153;
+    BtSair.Top := 153;
+  end;
+end;
+
+end.

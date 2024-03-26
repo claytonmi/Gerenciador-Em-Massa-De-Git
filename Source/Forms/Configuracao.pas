@@ -3,7 +3,8 @@ unit Configuracao;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons,
   System.IOUtils, Winapi.ShlObj, Winapi.ShellAPI;
 
@@ -21,6 +22,7 @@ type
     procedure BtSalvarClick(Sender: TObject);
     procedure BtCaminhoPastaCheckouClick(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     Config: string;
@@ -31,6 +33,7 @@ type
 
 var
   Configuracoes: TConfiguracoes;
+  ConfigFilePath: string;
 
 implementation
 
@@ -81,7 +84,7 @@ begin
         Rewrite(ArquivoTXT);
 
         // Escreva os caminhos das pastas no arquivo ConfigCaminho.txt
-          WriteLn(ArquivoTXT, Trim(EdCheckout.Text));
+        WriteLn(ArquivoTXT, Trim(EdCheckout.Text));
       finally
         // Feche o arquivo
         CloseFile(ArquivoTXT);
@@ -93,14 +96,29 @@ begin
   end;
 end;
 
+procedure TConfiguracoes.FormCreate(Sender: TObject);
+begin
+  ConfigFilePath := TPath.Combine(TPath.GetDocumentsPath, 'Config.txt');
+  if FileExists(ConfigFilePath) then
+  begin
+    // Se o arquivo existir, ler o texto e atribuir ao EditCaminhoGitBash.Text
+    EditCaminhoGitBash.Text := TFile.ReadAllText(ConfigFilePath);
+  end
+  else
+  begin
+    // Se o arquivo não existir, apresentar mensagem de que não foi encontrado
+    ShowMessage('Arquivo Config.txt não encontrado.');
+  end;
+end;
+
 procedure TConfiguracoes.BitBtn1Click(Sender: TObject);
 begin
 
-      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
-      EdCheckout.Text := '';
+  // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
+  EdCheckout.Text := '';
 
-      // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
-      EditCaminhoGitBash.Text := '';
+  // Limpe o conteúdo do EdCheckout antes de adicionar os novos caminhos
+  EditCaminhoGitBash.Text := '';
 end;
 
 procedure TConfiguracoes.BtCaminhoPastaCheckouClick(Sender: TObject);
