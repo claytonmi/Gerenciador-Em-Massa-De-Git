@@ -2,7 +2,6 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsSingle
   Caption = 'Gerenciador em massa'
   ClientHeight = 209
   ClientWidth = 281
@@ -2139,6 +2138,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     Top = 180
     Width = 75
     Height = 25
+    Align = alCustom
     Caption = 'Iniciar'
     TabOrder = 1
     OnClick = BtIniciarClick
@@ -2162,6 +2162,7 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     Top = 180
     Width = 75
     Height = 25
+    Align = alCustom
     Caption = 'Sair'
     TabOrder = 2
     OnClick = BtSairClick

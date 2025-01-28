@@ -2,7 +2,6 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsSingle
   Caption = 'Gerenciador em massa'
   ClientHeight = 209
   ClientWidth = 281
@@ -2130,7 +2129,6 @@ object GerenciadorEmMassaaDeGit: TGerenciadorEmMassaaDeGit
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Menu = MainMenu1
   Position = poScreenCenter
-  StyleName = 'Windows10 Dark'
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
